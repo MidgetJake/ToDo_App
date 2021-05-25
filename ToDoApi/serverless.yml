@@ -1,0 +1,90 @@
+service: todo-api
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  environment: ${self:custom.env.${self:custom.stage}}
+#  vpc:
+#    securityGroupIds:
+#      - security-group-id
+#    subnetIds:
+#      - subnet-id-1
+#      - subnet-id-2
+  region: eu-west-2
+
+resources:
+  Resources:
+    AWSLambdaVPCAccessExecutionRole:
+      Type: AWS::IAM::ManagedPolicy
+      Properties:
+        Description: Creating policy for vpc connetion.
+        Roles:
+          - {"Ref": "IamRoleLambdaExecution"}
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DeleteNetworkInterface
+                - cognito-idp:*
+                - cognito-identity:*
+                - cognito-sync:*
+              Resource: "*"
+
+plugins:
+  - serverless-offline
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  env:
+    dev:
+        postgres: pg://test_user:InsecurePassword@localhost:5432/todo_api
+  cors:
+    origins:
+      - "*"
+
+functions:
+  get_list:
+    handler: handler.get_list
+    events:
+      - http:
+          path: get_list
+          method: get
+          cors: {$self:custom.cors}
+          authorizer: aws_iam
+  create_task:
+    handler: handler.create_task
+    events:
+      - http:
+          path: create_task
+          method: put
+          cors: {$self:custom.cors}
+          authorizer: aws_iam
+  update_task:
+    handler: handler.update_task
+    events:
+      - http:
+          path: update_task
+          method: post
+          cors: {$self:custom.cors}
+          authorizer: aws_iam
+  delete_task:
+    handler: handler.delete_task
+    events:
+      - http:
+          path: delete_task
+          method: delete
+          cors: {$self:custom.cors}
+          authorizer: aws_iam
+  registration_callback:
+    handler: handler.register_user
+    events:
+      - http:
+          path: register_callback
+          method: POST
+          cors: { $self:custom.cors }
+          authorizer: aws_iam
