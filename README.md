@@ -26,6 +26,13 @@ Replace the details within this to the correct connection details for a postgres
 3. Connect to your postgres server with either a program like pgAdmin or cli tool like psql.
 4. Run each of the sql files found in the `Schema` folder. `create_base_schema.sql` must be run first. The order doesn't matter for the rest
 5. Back in the root of `ToDoApi` run `sls deploy`
+6.	Once the API has been deployed to AWS you will need to head into the cognito pool settings
+7.	In the settings for the user pool, open the `triggers` tab. In PreSignup Trigger set it to `todo-api-dev-registration_callback` (as shown below)
+
+![image](https://user-images.githubusercontent.com/4922601/119845642-5a8d1500-bf01-11eb-89ae-f1a49b5ffdd4.png)
+
+8.	A role for the identity pool should have been made, in IAM find the “Auth” role for this and edit the policy. You will then need to add the `ExecuteAPI` policy and enable the `Invoke` action under `Write`. You may then customise this to allow it to only execute the API that has been deployed.
+
 
 ## Running the mobile app
 1. In the root (`ToDoMobile`) there is a `config.js` file. Replace the strings with the correct values for the services.
